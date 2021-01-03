@@ -1,0 +1,24 @@
+{
+  "name": "2048-with-ai",
+  "version": "1.0.0",
+  "description": "2048 clone with an AI",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc src/components/App.tsx src/components/Game.tsx src/components/Grid.tsx src/components/Tile.tsx --jsx react --esModuleInterop --watch --outdir compiledJS",
+    "test": "watchify compiledJS/components/App.js compiledJS/components/Game.js compiledJS/components/Grid.js compiledJS/components/Tile.js -o devJS/bundle.js",
+    "build": "browserify compiledJS/utils.js compiledJS/direction.js compiledJS/board.js compiledJS/ai.js compiledJS/components/App.js compiledJS/components/Game.js compiledJS/components/Grid.js compiledJS/components/Tile.js compiledJS/components/Tile.js compiledJS/components/Menu.js -g [ envify --NODE_ENV production ] -g uglifyify | terser --compress --mangle > productionJS/bundle.js"
+  },
+  "dependencies": {
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "envify": "^4.1.0",
+    "terser": "^5.5.1",
+    "uglifyify": "^5.0.2"
+  },
+  "author": "Mark Lee",
+  "license": "MIT"
+}
