@@ -9,3 +9,4 @@
 
 <h2>TODO</h2>
 <p>The game needs screen controls so that mobile users can play rather than just watch the AI</p>
+<p>Proper animations so it's easier to tell what direction board has moved (the tile that spawns every turn can make this look really unclear)</p>
