@@ -1,7 +1,7 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { areBoardsEqual, BASE_VALUE, Board, boardDeepCopy, computeHorizontalMove, computeVerticalMove, emptyBoard, EMPTY_VALUE, HEIGHT, isFull, Position, totalValue, WIDTH } from "../board";
 import { Direction, directions } from "../direction";
-import { randomItemFromArray } from "../utils";
+import { randomItemFromArray, wait } from "../utils";
 import { computeOptimalMove } from "../ai";
 import { Grid } from "./Grid";
 import { Menu } from "./Menu";
@@ -10,14 +10,14 @@ export const Game = () => {
     const [running, setRunning] = useState(true);
 
     // Handle player board transitions resulting from player moving
-    const [board, nextBoard] = useReducer(computeNextBoard, fillRandomTile(emptyBoard));
+    const [board, nextBoard] = useState(fillRandomTile(emptyBoard));
 
     // Map a key onto an action
     const keyToAction = new Map<String, () => void>([
-        ["ArrowUp", () => nextBoard(directions.up)],
-        ["ArrowDown", () => nextBoard(directions.down)],
-        ["ArrowLeft", () => nextBoard(directions.left)],
-        ["ArrowRight", () => nextBoard(directions.right)],
+        ["ArrowUp", () => nextBoard(board => computeNextBoard(board, directions.up))],
+        ["ArrowDown", () => nextBoard(board => computeNextBoard(board, directions.down))],
+        ["ArrowLeft", () => nextBoard(board => computeNextBoard(board, directions.left))],
+        ["ArrowRight", () => nextBoard(board => computeNextBoard(board, directions.right))],
     ]);
 
     // Register DOM keyboard movements
@@ -64,7 +64,6 @@ export const Game = () => {
             const resultFromMove = computeMove(board, direction);
 
             if (isGameOver(board)) {
-                setRunning(false);
                 return board;
             } else if (isFull(resultFromMove) || areBoardsEqual(board, resultFromMove)) {
                 return board;
@@ -98,7 +97,7 @@ export const Game = () => {
     function makeAIMove() {
         const { optimalDirection } = computeOptimalMove(board, computeNextBoard);
 
-        nextBoard(optimalDirection);
+        nextBoard(computeNextBoard(board, optimalDirection));
     }
 
     function calculateScore(board: Board) {
@@ -115,10 +114,33 @@ export const Game = () => {
         return score;
     }
 
+    // Play through an entire game with just AI moves
+    async function runAIGame() {
+        let currBoard = board;
+
+        while (!isGameOver(currBoard)) {
+            const { optimalDirection } = computeOptimalMove(currBoard, computeNextBoard);
+
+            currBoard = computeNextBoard(currBoard, optimalDirection);
+            nextBoard(currBoard);
+
+            await wait(0);
+        }
+
+        setRunning(false);
+    }
+
     return (
         <>
-            <Menu score={calculateScore(board)} makeAIMove={makeAIMove} newGame={() => location.reload()} running={running} />
-            <Grid board={board} running={running} />
+            <Menu score={calculateScore(board)}
+                runAIGame={runAIGame}
+                makeAIMove={makeAIMove}
+                newGame={() => location.reload()}
+                running={running}
+            />
+            <Grid board={board}
+                running={running}
+            />
         </>
     )
 }

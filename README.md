@@ -1,4 +1,5 @@
 # 2048-with-AI
+
 <h2>Tooling:</h2>
 <p>This app was built with React and TypeScript, and browserify was used to bundle the compiled JavaScript</p>
 
@@ -8,4 +9,3 @@
 
 <h2>TODO</h2>
 <p>The game needs screen controls so that mobile users can play rather than just watch the AI</p>
-<p>A setting to watch the AI play an entire game rather than just a single move</p>

@@ -26,10 +26,6 @@ const numToBackgroundColor = new Map([
 ]);
 
 export const Tile = ({ num }: Props) => {
-
-    // Animate transition iff there's a number at this tile
-    const transition = num === EMPTY_VALUE ? "" : "all 0.5s ease-in-out";
-
     // Get background colour from the tile number
     function backgroundColor(num: number) {
         if (num !== EMPTY_VALUE) {
@@ -50,7 +46,6 @@ export const Tile = ({ num }: Props) => {
         <td className="tile" style={{
             backgroundColor: backgroundColor(num),
             fontSize: fontSize(),
-            transition: transition
         }}
         >
             {num === EMPTY_VALUE ? '' : num}
