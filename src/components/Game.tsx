@@ -6,11 +6,11 @@ import { computeOptimalMove } from "../ai";
 import { Grid } from "./Grid";
 import { Menu } from "./Menu";
 
+// Seed used for deciding where to place a random tile after every turn
+const SEED = Math.random();
+
 export const Game = () => {
     const [running, setRunning] = useState(true);
-
-    // Seed used to randomly generate tiles on the board
-    const [seed, nextSeed] = useReducer(Math.random, 0.5);
 
     // Handle player board transitions resulting from player moving
     const [board, nextBoard] = useState(fillRandomTile(emptyBoard));
@@ -28,7 +28,6 @@ export const Game = () => {
 
     function makePlayerMove(direction: Direction) {
         nextBoard(board => computeNextBoard(board, direction));
-        nextSeed();
     }
 
     // Make a move from whatever key the user pressed
@@ -44,7 +43,7 @@ export const Game = () => {
     function fillRandomTile(boardInput: Board) {
         const board = boardDeepCopy(boardInput);
         const emptyCoords = computeEmptyPositions(board);
-        const [randRow, randCol] = randomItemFromArray(emptyCoords, seed);
+        const [randRow, randCol] = randomItemFromArray(emptyCoords, SEED);
 
         board[randRow][randCol] = BASE_VALUE;
 
@@ -120,11 +119,10 @@ export const Game = () => {
         let currBoard = board;
 
         while (!isGameOver(currBoard)) {
-            const { optimalDirection } = computeOptimalMove(currBoard, computeNextBoard, seed);
+            const { optimalDirection } = computeOptimalMove(currBoard, computeNextBoard, SEED);
 
             currBoard = computeNextBoard(currBoard, optimalDirection);
             nextBoard(currBoard);
-            nextSeed();
 
             await wait(0);
         }
