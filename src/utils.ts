@@ -1,9 +1,9 @@
-export function randomIntBetween(lower: number, upper: number) {
-    return Math.floor(Math.random() * (upper - lower)) + lower;
+export function randomIntBetween(lower: number, upper: number, seed: number) {
+    return Math.floor(seed * (upper - lower)) + lower;
 }
 
-export function randomItemFromArray<T>(array: T[]) {
-    return array[randomIntBetween(0, array.length)];
+export function randomItemFromArray<T>(array: T[], seed: number) {
+    return array[randomIntBetween(0, array.length, seed)];
 }
 
 export function numDigitCount(num: number) {

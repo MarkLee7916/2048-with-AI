@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { areBoardsEqual, BASE_VALUE, Board, boardDeepCopy, computeHorizontalMove, computeVerticalMove, emptyBoard, EMPTY_VALUE, HEIGHT, isFull, Position, totalValue, WIDTH } from "../board";
 import { Direction, directions } from "../direction";
 import { randomItemFromArray, wait } from "../utils";
@@ -9,19 +9,27 @@ import { Menu } from "./Menu";
 export const Game = () => {
     const [running, setRunning] = useState(true);
 
+    // Seed used to randomly generate tiles on the board
+    const [seed, nextSeed] = useReducer(Math.random, 0.5);
+
     // Handle player board transitions resulting from player moving
     const [board, nextBoard] = useState(fillRandomTile(emptyBoard));
 
     // Map a key onto an action
     const keyToAction = new Map<String, () => void>([
-        ["ArrowUp", () => nextBoard(board => computeNextBoard(board, directions.up))],
-        ["ArrowDown", () => nextBoard(board => computeNextBoard(board, directions.down))],
-        ["ArrowLeft", () => nextBoard(board => computeNextBoard(board, directions.left))],
-        ["ArrowRight", () => nextBoard(board => computeNextBoard(board, directions.right))],
+        ["ArrowUp", () => makePlayerMove(directions.up)],
+        ["ArrowDown", () => makePlayerMove(directions.down)],
+        ["ArrowLeft", () => makePlayerMove(directions.left)],
+        ["ArrowRight", () => makePlayerMove(directions.right)],
     ]);
 
     // Register DOM keyboard movements
     useEffect(() => window.addEventListener("keydown", handleKeypress), []);
+
+    function makePlayerMove(direction: Direction) {
+        nextBoard(board => computeNextBoard(board, direction));
+        nextSeed();
+    }
 
     // Make a move from whatever key the user pressed
     function handleKeypress(event: KeyboardEvent) {
@@ -36,7 +44,7 @@ export const Game = () => {
     function fillRandomTile(boardInput: Board) {
         const board = boardDeepCopy(boardInput);
         const emptyCoords = computeEmptyPositions(board);
-        const [randRow, randCol] = randomItemFromArray(emptyCoords);
+        const [randRow, randCol] = randomItemFromArray(emptyCoords, seed);
 
         board[randRow][randCol] = BASE_VALUE;
 
@@ -93,13 +101,6 @@ export const Game = () => {
         });
     }
 
-    // Get optimal AI move and execute it
-    function makeAIMove() {
-        const { optimalDirection } = computeOptimalMove(board, computeNextBoard);
-
-        nextBoard(computeNextBoard(board, optimalDirection));
-    }
-
     function calculateScore(board: Board) {
         let score = 0;
 
@@ -119,10 +120,11 @@ export const Game = () => {
         let currBoard = board;
 
         while (!isGameOver(currBoard)) {
-            const { optimalDirection } = computeOptimalMove(currBoard, computeNextBoard);
+            const { optimalDirection } = computeOptimalMove(currBoard, computeNextBoard, seed);
 
             currBoard = computeNextBoard(currBoard, optimalDirection);
             nextBoard(currBoard);
+            nextSeed();
 
             await wait(0);
         }
@@ -134,7 +136,6 @@ export const Game = () => {
         <>
             <Menu score={calculateScore(board)}
                 runAIGame={runAIGame}
-                makeAIMove={makeAIMove}
                 newGame={() => location.reload()}
                 running={running}
             />

@@ -9,10 +9,10 @@ interface OptimalMove {
 
 const MAX_SEARCH_DEPTH = 6;
 
-export function computeOptimalMove(board: Board, computeNextBoard: (board: Board, direction: Direction) => Board): OptimalMove {
+export function computeOptimalMove(board: Board, computeNextBoard: (board: Board, direction: Direction, seed: number) => Board, seed: number) {
     return Object.values(directions).reduce(({ optimalDirection, optimalHeuristic }: OptimalMove, direction: Direction) => {
-        const boardFromMove = computeNextBoard(board, direction);
-        const heuristic = expect(boardFromMove, 1, computeNextBoard);
+        const boardFromMove = computeNextBoard(board, direction, seed);
+        const heuristic = expect(boardFromMove, 1, computeNextBoard, seed);
 
         if (heuristic > optimalHeuristic && !areBoardsEqual(board, boardFromMove)) {
             return { optimalDirection: direction, optimalHeuristic: heuristic };
@@ -24,30 +24,30 @@ export function computeOptimalMove(board: Board, computeNextBoard: (board: Board
 }
 
 // Simulate a random tile placement by taking an average of all the heuristics
-function expect(board: Board, depth: number, computeNextBoard: (board: Board, direction: Direction) => Board): number {
+function expect(board: Board, depth: number, computeNextBoard: (board: Board, direction: Direction, seed: number) => Board, seed: number): number {
     if (depth == MAX_SEARCH_DEPTH) {
         return computeHeuristic(board);
     }
 
     const sum: number = Object.values(directions).reduce((sum: number, direction: Direction) => {
-        const boardFromMove = computeNextBoard(board, direction);
+        const boardFromMove = computeNextBoard(board, direction, seed);
 
-        return sum + max(boardFromMove, depth + 1, computeNextBoard);
+        return sum + max(boardFromMove, depth + 1, computeNextBoard, seed);
     }, 0);
 
     return sum / 4;
 }
 
 // For all moves the AI could make, return most optimal
-function max(board: Board, depth: number, computeNextBoard: (board: Board, direction: Direction) => Board): number {
+function max(board: Board, depth: number, computeNextBoard: (board: Board, direction: Direction, seed: number) => Board, seed: number): number {
     if (depth == MAX_SEARCH_DEPTH) {
         return computeHeuristic(board);
     }
 
     return Object.values(directions).reduce((maxHeuristic: number, direction: Direction) => {
-        const boardFromMove = computeNextBoard(board, direction);
+        const boardFromMove = computeNextBoard(board, direction, seed);
 
-        return Math.max(expect(boardFromMove, depth + 1, computeNextBoard), maxHeuristic);
+        return Math.max(expect(boardFromMove, depth + 1, computeNextBoard, seed), maxHeuristic);
     }, Number.NEGATIVE_INFINITY);
 }
 
@@ -85,7 +85,7 @@ function computeMonotonicity(board: Board) {
 // Return true if row is sorted
 function isIncreasing(boardRow: number[]) {
     for (let i = 0; i < boardRow.length - 1; i++) {
-        if (boardRow[i] !== EMPTY_VALUE && boardRow[i + 1] < boardRow[i]) {
+        if (boardRow[i] !== EMPTY_VALUE && boardRow[i + 1] !== EMPTY_VALUE && boardRow[i + 1] < boardRow[i]) {
             return false;
         }
     }
